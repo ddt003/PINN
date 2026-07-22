@@ -1,0 +1,7 @@
+deepxde>=1.11
+numpy
+matplotlib
+# Backend: ne serve UNO. PyTorch e' il piu' semplice da installare.
+# CPU:  pip install torch --index-url https://download.pytorch.org/whl/cpu
+# GPU:  pip install torch   (con CUDA gia' presente)
+torch
