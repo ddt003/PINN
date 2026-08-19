@@ -58,7 +58,39 @@ def get_parser(description, default_arch, default_adam, default_lr):
              "Il paper ricampiona ad ogni epoca (=1), qui il default e' 100 "
              "per contenere i tempi; 0 = mai (default: %(default)s)",
     )
+    p.add_argument(
+        "--bc", default="soft", choices=["soft", "hard"],
+        help="Come imporre le condizioni al bordo (slide 22 di PINNs.pdf, "
+             "'Hard vs Soft Boundary Conditions'): "
+             "'soft' (default, = paper Grossmann et al.) le impone come "
+             "termine di loss extra (dde.icbc.DirichletBC); "
+             "'hard' le incorpora nell'architettura della rete tramite un "
+             "cambio di variabile che le soddisfa esattamente per costruzione "
+             "(vedi common.hard_bc_transform_interval). Con --bc hard non c'e' "
+             "nessun peso di loss da bilanciare per il bordo.",
+    )
     return p
+
+
+def hard_bc_transform_interval(u0, u1):
+    """Transform di output per DeepXDE che impone in modo HARD le condizioni
+    di Dirichlet u(0)=u0, u(1)=u1 su un intervallo (0,1) (slide 22 di
+    PINNs.pdf):
+
+        u_hat(x) = (1-x) u0 + x u1 + x(1-x) N(x;theta)
+
+    Per costruzione u_hat(0)=u0 e u_hat(1)=u1 qualunque siano i pesi theta
+    della rete N: le condizioni al bordo sono soddisfatte ESATTAMENTE, non
+    approssimativamente, e non richiedono alcun termine di loss (ne' quindi
+    alcun peso da bilanciare rispetto al residuo della PDE).
+
+    Uso:
+        net.apply_output_transform(hard_bc_transform_interval(u0, u1))
+    """
+    def transform(x, y):
+        x0 = x[:, 0:1]
+        return (1 - x0) * u0 + x0 * u1 + x0 * (1 - x0) * y
+    return transform
 
 
 def apply_fast(args, adam=1000, lbfgs=200):
@@ -123,8 +155,12 @@ def rel_l2(y_pred, y_true):
 
 
 def save_run(outdir, name, arch, times, errors, X, y_pred, columns, y_true=None,
-             losshistory=None, train_state=None):
-    """Salva CSV con la predizione su griglia + JSON con tempi ed errori."""
+             losshistory=None, train_state=None, extra_info=None):
+    """Salva CSV con la predizione su griglia + JSON con tempi ed errori.
+
+    extra_info: dict opzionale (es. {"bc_mode": "hard", "method": "..."})
+    unito al JSON di output, senza toccare lo schema base.
+    """
     os.makedirs(outdir, exist_ok=True)
 
     blocks = [X, y_pred]
@@ -136,6 +172,8 @@ def save_run(outdir, name, arch, times, errors, X, y_pred, columns, y_true=None,
 
     info = {"case": name, "architecture": list(arch),
             "times_sec": times, "errors": errors}
+    if extra_info:
+        info.update(extra_info)
     with open(os.path.join(outdir, f"{name}_info.json"), "w") as f:
         json.dump(info, f, indent=2)
 

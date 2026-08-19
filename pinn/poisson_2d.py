@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import deepxde as dde
 
-from common import (get_parser, apply_fast, train_pinn, timed_predict,
+from pinn.common import (get_parser, apply_fast, train_pinn, timed_predict,
                     rel_l2, save_run)
 
 
