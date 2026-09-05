@@ -26,7 +26,7 @@ import numpy as np
 import deepxde as dde
 from deepxde import backend as bkd
 
-from pinn.common import (get_parser, apply_fast, train_pinn, timed_predict,
+from common import (get_parser, apply_fast, train_pinn, timed_predict,
                     rel_l2, save_run, hard_bc_transform_interval)
 
 

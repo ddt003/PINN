@@ -29,10 +29,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import deepxde as dde
 
-from pinn.common import (get_parser, apply_fast, train_pinn, timed_predict,
+from common import (get_parser, apply_fast, train_pinn, timed_predict,
                     save_run)
 
-EPS = 0.01
+EPS = 0.01 # diffusion oefficient in pde
 T_FINAL = 0.05
 
 
