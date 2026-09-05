@@ -44,10 +44,9 @@ def pde(X, u):
 def main():
     parser = get_parser(__doc__, default_arch=[60, 60, 60],
                         default_adam=20000, default_lr=1e-3)
-    args = parser.parse_args()
-
     parser.add_argument("--eval-n", type=int, default=64,
                         help="Evaluation grid eval-n^3 (paper: 150)")
+    args = parser.parse_args()
     dde.config.set_random_seed(args.seed)
 
     geom = dde.geometry.Cuboid([0, 0, 0], [1, 1, 1])
@@ -93,12 +92,14 @@ def main():
     y_true = exact(X)
     err = rel_l2(y_pred, y_true)
 
-    name = "poisson_3d_" + "-".join(map(str, args.arch))
+    name = "poisson_3d_" + "-".join(map(str, args.arch)) + f"_bc-{args.bc}"
     save_run(args.outdir, name, args.arch,
              {"train": t_train, "eval": t_eval},
              {"l2_relative": err},
              X, y_pred, ["x", "y", "z", "u_pinn", "u_exact"], y_true,
-             losshistory, train_state)
+             losshistory, train_state,
+             extra_info={"bc_mode": args.bc,
+                                      "method": f"PINN with {args.bc} boundary conditions"})
 
     # plot: section at z = 0.5
     k = n // 2
