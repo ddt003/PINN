@@ -34,7 +34,7 @@
 #include <iostream>
 
 #define NEUMANN
-//#define CONVERGENCE
+#define CONVERGENCE
 //#define TRANSPORT_COEFFICIENT
 //#define REACTION_COEFFICIENT
 
@@ -187,8 +187,10 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::cos(2.0 * M_PI * p[0]) * std::cos(4.0 * M_PI * p[1]);
-    }
+      const double x = p[0];
+      const double y = p[1];
+      
+      return (x * x) * ((x - 1.0) * (x - 1.0)) * y * ((y - 1.0) * (y - 1.0));    }
 
     // Gradient evaluation.
     virtual Tensor<1, dim>
@@ -196,12 +198,14 @@ public:
              const unsigned int /*component*/ = 0) const override
     {
       Tensor<1, dim> result;
+      const double x = p[0];
+      const double y = p[1];
 
-      result[0] =
-        -2.0 * M_PI * std::sin(2.0 * M_PI * p[0]) * std::cos(4.0 * M_PI * p[1]);
-      result[1] =
-        -4.0 * M_PI * std::cos(2.0 * M_PI * p[0]) * std::sin(4.0 * M_PI * p[1]);
-
+      // Derivata parziale rispetto a x
+      result[0] = (4.0 * x * x * x - 6.0 * x * x + 2.0 * x) * (y * (y - 1.0) * (y - 1.0));
+      
+      // Derivata parziale rispetto a y
+      result[1] = (x * x * (x - 1.0) * (x - 1.0)) * (3.0 * y * y - 4.0 * y + 1.0);
       return result;
     }
   };

@@ -268,7 +268,7 @@ Elliptic::solve()
 
   // Here we specify the maximum number of iterations of the iterative solver,
   // and its tolerance.
-  SolverControl solver_control(20000, 1e-5);
+  SolverControl solver_control(20000, 1e-10);
 
   // Since the system matrix is symmetric and positive definite, we solve the
   // system using the conjugate gradient method.

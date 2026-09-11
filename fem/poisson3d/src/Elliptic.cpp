@@ -37,7 +37,7 @@ Elliptic::setup()
     std::cout << "  Quadrature points per cell = " << quadrature->size() << std::endl;
 
 #ifdef NEUMANN
-    quadrature_boundary = std::make_unique<QGaussSimplex<dim - 1>>(r + 1);
+    quadrature_boundary = std::make_unique<QGauss<dim - 1>>(r + 1);
     std::cout << "  Quadrature points per boundary cell = " << quadrature_boundary->size() << std::endl;
 #endif
 
@@ -259,7 +259,7 @@ Elliptic::solve()
 
   // Here we specify the maximum number of iterations of the iterative solver,
   // and its tolerance.
-  SolverControl solver_control(20000, 1e-5);
+  SolverControl solver_control(20000, 1e-8);
 
   // Since the system matrix is symmetric and positive definite, we solve the
   // system using the conjugate gradient method.
@@ -321,18 +321,11 @@ Elliptic::output() const
 double
 Elliptic::compute_error(const VectorTools::NormType &norm_type) const
 {
-  // The error is an integral, and we approximate that integral using a
-  // quadrature formula. To make sure we are accurate enough, we use a
-  // quadrature formula with one node more than what we used in assembly.
-  const QGaussSimplex<dim> quadrature_error(r + 2);
-
-  // for dim>=2
-  FE_SimplexP<dim> fe_linear(1);
-  MappingFE        mapping(fe_linear);
+  const QGauss<dim> quadrature_error(r + 2);
 
   // First we compute the norm on each element, and store it in a vector.
   Vector<double> error_per_cell(mesh.n_active_cells());
-  VectorTools::integrate_difference(mapping,
+  VectorTools::integrate_difference(MappingQGeneric<dim>(r),
                                     dof_handler,
                                     solution,
                                     ExactSolution(),

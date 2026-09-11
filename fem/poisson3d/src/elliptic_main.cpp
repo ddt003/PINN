@@ -17,32 +17,30 @@ main(int /*argc*/, char * /*argv*/[])
                                            "../mesh/mesh-square-h0.050000.msh",
                                            "../mesh/mesh-square-h0.025000.msh",
                                            "../mesh/mesh-square-h0.012500.msh"};
-  const std::vector<double>      h_vals = {1.0 / 10.0,
-                                           1.0 / 20.0,
-                                           1.0 / 40.0,
-                                           1.0 / 80.0};
-  const unsigned int             degree = 2;
+  const std::vector<unsigned int>     N = {16, 32, 64, 128};
+  const unsigned int             degree = 1;
 
   std::ofstream convergence_file("convergence.csv");
   convergence_file << "h,eL2,eH1" << std::endl;
-  for (unsigned int i = 0; i < meshes.size(); ++i)
+  for (unsigned int i = 0; i < N.size(); ++i)
     {
-      Elliptic problem(meshes[i], degree);
+      Elliptic problem(N[i], degree);
 
       problem.setup();
       problem.assemble();
       problem.solve();
       problem.output();
 
-      //const double h        = 1.0 / N;
       const double error_L2 = problem.compute_error(VectorTools::L2_norm);
       const double error_H1 = problem.compute_error(VectorTools::H1_norm);
 
-      table.add_value("h", h_vals[i]); // h
+      double h=1.0/N[i];
+
+      table.add_value("h", h); // h
       table.add_value("L2", error_L2);
       table.add_value("H1", error_H1);
 
-      convergence_file << h_vals[i] /*h*/ << "," << error_L2 << "," << error_H1
+      convergence_file << h /*h*/ << "," << error_L2 << "," << error_H1
                        << std::endl;
     }
 

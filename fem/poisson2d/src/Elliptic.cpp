@@ -267,7 +267,7 @@ Elliptic::solve()
 
   // Here we specify the maximum number of iterations of the iterative solver,
   // and its tolerance.
-  SolverControl solver_control(20000, 1e-5);
+  SolverControl solver_control(20000, 1e-10);
 
   // Since the system matrix is symmetric and positive definite, we solve the
   // system using the conjugate gradient method.
@@ -332,7 +332,7 @@ Elliptic::compute_error(const VectorTools::NormType &norm_type) const
   // The error is an integral, and we approximate that integral using a
   // quadrature formula. To make sure we are accurate enough, we use a
   // quadrature formula with one node more than what we used in assembly.
-  const QGaussSimplex<dim> quadrature_error(r + 2);
+  const QGauss<dim> quadrature_error(r + 2);
 
   // for dim>=2
   FE_SimplexP<dim> fe_linear(1);
@@ -340,7 +340,7 @@ Elliptic::compute_error(const VectorTools::NormType &norm_type) const
 
   // First we compute the norm on each element, and store it in a vector.
   Vector<double> error_per_cell(mesh.n_active_cells());
-  VectorTools::integrate_difference(mapping,
+  VectorTools::integrate_difference(MappingQGeneric<dim>(r),
                                     dof_handler,
                                     solution,
                                     ExactSolution(),

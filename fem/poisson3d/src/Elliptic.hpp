@@ -34,7 +34,7 @@
 #include <iostream>
 
 //#define NEUMANN
-//#define CONVERGENCE
+#define CONVERGENCE
 //#define TRANSPORT_COEFFICIENT
 //#define REACTION_COEFFICIENT
 
@@ -133,12 +133,12 @@ public:
     value(const Point<dim> & /*p*/,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::exp(-1.0);
+      return 0.0;
     }
   };
 
 #ifdef NEUMANN
-   // Neumann boundary conditions.
+  // Function h(x).
   class FunctionH : public Function<dim>
   {
   public:
@@ -146,7 +146,7 @@ public:
     FunctionH()
     {}
 
-    // Evaluation:
+    // Evaluation.
     virtual double
     value(const Point<dim> & /*p*/, const unsigned int /*component*/ = 0) const override
     {
@@ -170,7 +170,7 @@ public:
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
     {
-      return std::cos(2.0 * M_PI * p[0]) * std::cos(4.0 * M_PI * p[1]);
+      return std::sin(M_PI * p[0]) * std::sin(M_PI * p[1]) * std::sin(M_PI * p[2]);
     }
 
     // Gradient evaluation.
@@ -179,12 +179,9 @@ public:
              const unsigned int /*component*/ = 0) const override
     {
       Tensor<1, dim> result;
-
-      result[0] =
-        -2.0 * M_PI * std::sin(2.0 * M_PI * p[0]) * std::cos(4.0 * M_PI * p[1]);
-      result[1] =
-        -4.0 * M_PI * std::cos(2.0 * M_PI * p[0]) * std::sin(4.0 * M_PI * p[1]);
-
+      result[0] = M_PI * std::cos(M_PI * p[0]) * std::sin(M_PI * p[1]) * std::sin(M_PI * p[2]);
+      result[1] = M_PI * std::sin(M_PI * p[0]) * std::cos(M_PI * p[1]) * std::sin(M_PI * p[2]);
+      result[2] = M_PI * std::sin(M_PI * p[0]) * std::sin(M_PI * p[1]) * std::cos(M_PI * p[2]);
       return result;
     }
   };
