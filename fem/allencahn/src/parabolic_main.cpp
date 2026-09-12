@@ -104,19 +104,20 @@ main(int argc, char *argv[])
   Utilities::MPI::MPI_InitFinalize mpi_init(argc, argv);
 
   //const std::string  mesh_file_name = "../mesh/mesh-square-h0.100000.msh";
-  const unsigned int N = 2048;
+  const std::vector<unsigned int> N_vector = {32, 128, 512, 2048};
   const unsigned int degree         = 1;
 
   const double T      = 0.05;
   const double deltat = 0.001;
   const double theta  = 1.0;
 
-  //Parabolic problem(mesh_file_name, degree, T, deltat, theta);
-  Parabolic problem(N, degree, T, deltat, theta);
-  
+for (unsigned int j=0; j<N_vector.size(); ++j ) {
+  std::cout << "N = " << N_vector[j] << std::endl; //meshes
+  Parabolic problem(N_vector[j], degree, T, deltat, theta);
+
   problem.setup();
   problem.solve();
-
+}
   return 0;
 }
 #endif //CONVERGENCE

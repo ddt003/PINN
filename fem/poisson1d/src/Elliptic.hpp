@@ -24,6 +24,7 @@
 #include <deal.II/lac/solver_gmres.h>
 #include <deal.II/lac/sparse_matrix.h>
 #include <deal.II/lac/vector.h>
+#include <deal.II/base/timer.h>
 
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/matrix_tools.h>
@@ -199,6 +200,7 @@ public:
   Elliptic(const unsigned int &N_, const unsigned int &r_)
     : N(N_)
     , r(r_)
+    , computing_timer(std::cout, dealii::TimerOutput::summary, dealii::TimerOutput::wall_times)
   {}
 
   // Initialization.
@@ -273,6 +275,8 @@ protected:
 
   // System solution.
   Vector<double> solution;
+
+  mutable TimerOutput computing_timer;
 
 #ifdef NEUMANN
   // Quadrature formula used on boundary lines.

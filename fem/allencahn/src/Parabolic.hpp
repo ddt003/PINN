@@ -31,6 +31,7 @@
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/matrix_tools.h>
 #include <deal.II/numerics/vector_tools.h>
+#include <deal.II/base/timer.h>
 
 #include <filesystem>
 #include <fstream>
@@ -222,6 +223,7 @@ public:
     , deltat(deltat_)
     , theta(theta_)
     , mesh(MPI_COMM_WORLD)
+    , computing_timer(pcout, dealii::TimerOutput::summary, dealii::TimerOutput::wall_times)
   {}
 
   // Initialization.
@@ -355,6 +357,8 @@ protected:
   TrilinosWrappers::MPI::Vector solution_old_time; 
 
   TrilinosWrappers::MPI::Vector newton_update;
+
+  mutable TimerOutput computing_timer;
 
 #ifdef NEUMANN
   // Quadrature formula used on boundary lines.

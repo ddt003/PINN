@@ -3,6 +3,7 @@
 void
 Elliptic::setup()
 {
+  TimerOutput::Scope t(computing_timer, "1. Setup system");
   std::cout << "===============================================" << std::endl;
 
   // Create the mesh.
@@ -92,6 +93,7 @@ Elliptic::setup()
 void
 Elliptic::assemble()
 {
+  TimerOutput::Scope t(computing_timer, "2. Assembly");  
   std::cout << "===============================================" << std::endl;
 
   std::cout << "  Assembling the linear system" << std::endl;
@@ -263,6 +265,7 @@ Elliptic::assemble()
 void
 Elliptic::solve()
 {
+  TimerOutput::Scope t(computing_timer, "3. Solve linear system");
   std::cout << "===============================================" << std::endl;
 
   // Here we specify the maximum number of iterations of the iterative solver,
@@ -297,6 +300,7 @@ Elliptic::solve()
 void
 Elliptic::output() const
 {
+  TimerOutput::Scope t(computing_timer, "4. Output");
   std::cout << "===============================================" << std::endl;
 
   // The DataOut class manages writing the results to a file.
@@ -329,6 +333,7 @@ Elliptic::output() const
 double
 Elliptic::compute_error(const VectorTools::NormType &norm_type) const
 {
+  TimerOutput::Scope t(computing_timer, "5. Compute Error");
   // The error is an integral, and we approximate that integral using a
   // quadrature formula. To make sure we are accurate enough, we use a
   // quadrature formula with one node more than what we used in assembly.

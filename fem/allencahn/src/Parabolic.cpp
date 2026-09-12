@@ -3,6 +3,7 @@
 void
 Parabolic::setup()
 {
+  TimerOutput::Scope t(computing_timer, "1. Setup system");
   // Create the mesh.
   {
     pcout << "Initializing the mesh" << std::endl;
@@ -63,10 +64,9 @@ Parabolic::setup()
     dof_handler.distribute_dofs(*fe);
 
     locally_owned_dofs = dof_handler.locally_owned_dofs();
-    DoFTools::extract_locally_relevant_dofs(dof_handler, locally_relevant_dofs);
-
+    locally_relevant_dofs = DoFTools::extract_locally_relevant_dofs(dof_handler);
     constraints.clear();
-    constraints.reinit(locally_relevant_dofs);
+    constraints.reinit(locally_relevant_dofs, locally_owned_dofs);
     DoFTools::make_periodicity_constraints(dof_handler, 0, 1, 0, constraints);
     constraints.close();
 
@@ -105,6 +105,7 @@ Parabolic::setup()
 
 void Parabolic::assemble_newton_system()
 {
+  TimerOutput::Scope t(computing_timer, "2. Assembly");
   lhs_matrix = 0.0;
   system_rhs = 0.0;
 
@@ -183,7 +184,8 @@ void Parabolic::solve_newton()
   for (unsigned int iter = 0; iter < max_newton_iter; ++iter)
     {
       assemble_newton_system();
-
+      {
+      TimerOutput::Scope t(computing_timer, "3. Solve linear system");
       double residual_norm = system_rhs.l2_norm();
       pcout << "    Newton iter " << iter << " - Residual: " << residual_norm << std::endl;
       if (residual_norm < tol) break;
@@ -198,6 +200,7 @@ void Parabolic::solve_newton()
       constraints.distribute(newton_update);
       
       solution_owned += newton_update;
+      }
     }
   solution = solution_owned; 
 }
@@ -205,6 +208,7 @@ void Parabolic::solve_newton()
 void
 Parabolic::output(const unsigned int &time_step) const
 {
+  TimerOutput::Scope t(computing_timer, "4. Output");
   DataOut<dim> data_out;
   data_out.add_data_vector(dof_handler, solution, "u");
 
@@ -261,6 +265,7 @@ Parabolic::solve()
 double
 Parabolic::compute_error(const VectorTools::NormType &norm_type)
 {
+  TimerOutput::Scope t(computing_timer, "5. Compute Error");
   FE_SimplexP<dim> fe_linear(1);
   // FE_Q<dim> fe_linear(1);
   MappingFE        mapping(fe_linear);
