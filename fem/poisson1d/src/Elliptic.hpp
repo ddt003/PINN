@@ -34,7 +34,7 @@
 #include <fstream>
 #include <iostream>
 
-#define CONVERGENCE
+//#define CONVERGENCE
 
 using namespace dealii;
 

@@ -38,7 +38,7 @@ def get_parser(description, default_arch, default_adam, default_lr):
     p.add_argument("--seed", type=int, default=1234)
     p.add_argument("--outdir", default="results")
     p.add_argument(
-        "--dist", default="Hammersley", choices=["Hammersley", "LHS", "pseudo"],
+        "--dist", default="LHS", choices=["Hammersley", "LHS", "pseudo"],
         help="Collocation points distribution. The paper uses LHS, but the LHS implementation in scikit-optimize is very slow with many points;" \
         "Hammersley (quasi-random) is equivalent in practice and much faster (default: %(default)s)",
     )
