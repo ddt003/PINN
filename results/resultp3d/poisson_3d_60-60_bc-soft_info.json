@@ -1,0 +1,16 @@
+{
+  "case": "poisson_3d_60-60_bc-soft",
+  "architecture": [
+    60,
+    60
+  ],
+  "times_sec": {
+    "train": 548.20472306991,
+    "eval": 0.008831857005134225
+  },
+  "errors": {
+    "l2_relative": 0.0024822243516187652
+  },
+  "bc_mode": "soft",
+  "method": "PINN with soft boundary conditions"
+}

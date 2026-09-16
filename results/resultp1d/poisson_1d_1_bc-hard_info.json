@@ -1,0 +1,15 @@
+{
+  "case": "poisson_1d_1_bc-hard",
+  "architecture": [
+    1
+  ],
+  "times_sec": {
+    "train": 268.2560573529918,
+    "eval": 0.00039176689460873604
+  },
+  "errors": {
+    "l2_relative": 0.026838074200240564
+  },
+  "bc_mode": "hard",
+  "method": "PINN with hard boundary conditions"
+}

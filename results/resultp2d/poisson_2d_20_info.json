@@ -1,0 +1,13 @@
+{
+  "case": "poisson_2d_20",
+  "architecture": [
+    20
+  ],
+  "times_sec": {
+    "train": 928.0261147408746,
+    "eval": 0.006680518155917525
+  },
+  "errors": {
+    "l2_relative": 0.15520305189784517
+  }
+}

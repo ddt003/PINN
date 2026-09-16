@@ -1,0 +1,19 @@
+{
+  "case": "allen_cahn_1d_20-20-20-20-20-20-20",
+  "architecture": [
+    20,
+    20,
+    20,
+    20,
+    20,
+    20,
+    20
+  ],
+  "times_sec": {
+    "train": 432.61716119293123,
+    "eval": 0.0007092230953276157
+  },
+  "errors": {
+    "note": "error to be calculated against FEM on a fine mesh (no analytical solution)"
+  }
+}
