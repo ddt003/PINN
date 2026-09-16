@@ -7,16 +7,10 @@
 #include "Elliptic.hpp"
 
 #ifdef CONVERGENCE
-// Main function.
 int
 main(int /*argc*/, char * /*argv*/[])
 {
   ConvergenceTable table;
-
-  const std::vector<std::string> meshes = {"../mesh/mesh-square-h0.100000.msh",
-                                           "../mesh/mesh-square-h0.050000.msh",
-                                           "../mesh/mesh-square-h0.025000.msh",
-                                           "../mesh/mesh-square-h0.012500.msh"};
   const std::vector<unsigned int>     N = {64, 128, 256, 512, 1024, 2048, 4096};
   const unsigned int             degree = 1;
 

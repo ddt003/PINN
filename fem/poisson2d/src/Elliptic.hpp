@@ -35,30 +35,21 @@
 #include <iostream>
 
 #define NEUMANN
-#define CONVERGENCE
-//#define TRANSPORT_COEFFICIENT
-//#define REACTION_COEFFICIENT
+//#define CONVERGENCE
 
 using namespace dealii;
 
-/**
- * Class managing the differential problem.
- */
 class Elliptic
 {
 public:
-  // Physical dimension (1D, 2D, 3D)
   static constexpr unsigned int dim = 2;
 
-  // Diffusion coefficient
   class DiffusionCoefficient : public Function<dim>
   {
   public:
-    // Constructor.
     DiffusionCoefficient()
     {}
 
-    // Evaluation.
     virtual double
     value(const Point<dim> & /*p*/, const unsigned int /*component*/ = 0) const override
     {
@@ -66,59 +57,13 @@ public:
     }
   };
 
-#ifdef TRANSPORT_COEFFICIENT
-  // transportin coefficient.
-  class TransportCoefficient : public Function<dim>
-  {
-  public:
-    virtual void
-    vector_value(const Point<dim> & /*p*/,
-                 Vector<double> &values) const override
-    {
-      values[0] = 1.0;
-      values[1] = 1.0;
-    }
 
-    virtual double
-    value(const Point<dim> & /*p*/,
-          const unsigned int /*component*/ = 0) const override
-    {
-      return 1.0;
-    }
-
-  protected:
-    const double g = 0.5;
-  };
-#endif //TRANSPORT_COEFFICIENT
-
-#ifdef REACTION_COEFFICIENT
-  // Reaction coefficient.
-  class ReactionCoefficient : public Function<dim>
-  {
-  public:
-    // Constructor.
-    ReactionCoefficient()
-    {}
-
-    // Evaluation.
-    virtual double
-    value(const Point<dim> & /*p*/,
-          const unsigned int /*component*/ = 0) const override
-    {
-      return 1.0;
-    }
-  };
-#endif //REACTION_COEFFICIENT
-
-  // Forcing term.
   class ForcingTerm : public Function<dim>
   {
   public:
-    // Constructor.
     ForcingTerm()
     {}
 
-    // Evaluation.
     virtual double
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
@@ -138,15 +83,12 @@ public:
     }
   };
 
-  // Dirichlet boundary conditions.
   class FunctionG : public Function<dim>
   {
   public:
-    // Constructor.
     FunctionG()
     {}
 
-    // Evaluation.
     virtual double
     value(const Point<dim> & /*p*/,
           const unsigned int /*component*/ = 0) const override
@@ -156,15 +98,12 @@ public:
   };
 
 #ifdef NEUMANN
-   // Neumann boundary conditions.
   class FunctionH : public Function<dim>
   {
   public:
-    // Constructor.
     FunctionH()
     {}
 
-    // Evaluation:
     virtual double
     value(const Point<dim> & /*p*/, const unsigned int /*component*/ = 0) const override
     {
@@ -175,15 +114,12 @@ public:
 
 
 #ifdef CONVERGENCE
-  // Exact solution.
   class ExactSolution : public Function<dim>
   {
   public:
-    // Constructor.
     ExactSolution()
     {}
 
-    // Evaluation.
     virtual double
     value(const Point<dim> &p,
           const unsigned int /*component*/ = 0) const override
@@ -193,7 +129,6 @@ public:
       
       return (x * x) * ((x - 1.0) * (x - 1.0)) * y * ((y - 1.0) * (y - 1.0));    }
 
-    // Gradient evaluation.
     virtual Tensor<1, dim>
     gradient(const Point<dim> &p,
              const unsigned int /*component*/ = 0) const override
@@ -202,103 +137,69 @@ public:
       const double x = p[0];
       const double y = p[1];
 
-      // Derivata parziale rispetto a x
       result[0] = (4.0 * x * x * x - 6.0 * x * x + 2.0 * x) * (y * (y - 1.0) * (y - 1.0));
       
-      // Derivata parziale rispetto a y
       result[1] = (x * x * (x - 1.0) * (x - 1.0)) * (3.0 * y * y - 4.0 * y + 1.0);
       return result;
     }
   };
   #endif //CONVERGENCE
 
-  // Constructor.
   Elliptic(const unsigned int &N_, const unsigned int &r_)
     : N(N_)
     , r(r_)
     , computing_timer(std::cout, dealii::TimerOutput::summary, dealii::TimerOutput::wall_times)  
   {}
 
-  // Initialization.
   void
   setup();
 
-  // System assembly.
   void
   assemble();
 
-  // System solution.
   void
   solve();
 
-  // Output.
   void
   output() const;
 
 #ifdef CONVERGENCE
-  // Compute the error.
   double
   compute_error(const VectorTools::NormType &norm_type) const;
 #endif
 
 protected:
-  // Path to the mesh file.
   const unsigned int N;
-  //const std::string mesh_file_name;
 
-  // Polynomial degree.
   const unsigned int r;
 
-  // Diffusion coefficient.
   DiffusionCoefficient diffusion_coefficient;
-  
-#ifdef TRANSPORT_COEFFICIENT
-  TransportCoefficient transport_coefficient;
-#endif //TRANSPORT_COEFFICIENT
 
-
-#ifdef REACTION_COEFFICIENT
-  // Reaction coefficient.
-  ReactionCoefficient reaction_coefficient;
-#endif //REACTION_COEFFICIENT
-
-  // Forcing term.
   ForcingTerm forcing_term;
 
-  // g(x).
   FunctionG function_g;
 
-  // Triangulation.
   Triangulation<dim> mesh;
 
-  // Finite element space.
   std::unique_ptr<FiniteElement<dim>> fe;
 
-  // Quadrature formula.
   std::unique_ptr<Quadrature<dim>> quadrature;
 
-  // DoF handler.
   DoFHandler<dim> dof_handler;
 
-  // Sparsity pattern.
   SparsityPattern sparsity_pattern;
 
-  // System matrix.
   SparseMatrix<double> system_matrix;
 
-  // System right-hand side.
   Vector<double> system_rhs;
 
-  // System solution.
   Vector<double> solution;
 
   mutable TimerOutput computing_timer;
 
 #ifdef NEUMANN
-  // Quadrature formula used on boundary lines.
   std::unique_ptr<Quadrature<dim - 1>> quadrature_boundary;
 
-  // h(x).
   FunctionH function_h;
 #endif //NEUMANN
 

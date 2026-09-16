@@ -4,7 +4,6 @@ void
 Parabolic::setup()
 {
   TimerOutput::Scope t(computing_timer, "1. Setup system");
-  // Create the mesh.
   {
     pcout << "Initializing the mesh" << std::endl;
 
@@ -27,26 +26,22 @@ Parabolic::setup()
 
   pcout << "-----------------------------------------------" << std::endl;
 
-  // Initialize the finite element space.
   {
     pcout << "Initializing the finite element space" << std::endl;
 
     fe = std::make_unique<FE_SimplexP<dim>>(r);
-    // fe = std::make_unique<FE_Q<dim>>(r);
 
     pcout << "  Degree                     = " << fe->degree << std::endl;
     pcout << "  DoFs per cell              = " << fe->dofs_per_cell
           << std::endl;
 
     quadrature = std::make_unique<QGaussSimplex<dim>>(r + 1);
-    // quadrature = std::make_unique<QGauss<dim>>(r + 1);
 
     pcout << "  Quadrature points per cell = " << quadrature->size()
           << std::endl;
 
 #ifdef NEUMANN
     quadrature_boundary = std::make_unique<QGaussSimplex<dim - 1>>(r + 1);
-    // quadrature_boundary = std::make_unique<QGauss<dim - 1>>(r + 1);
 
     std::cout << "  Quadrature points per boundary cell = "
               << quadrature_boundary->size() << std::endl;
@@ -56,7 +51,6 @@ Parabolic::setup()
 
   pcout << "-----------------------------------------------" << std::endl;
 
-  // Initialize the DoF handler.
   {
     pcout << "Initializing the DoF handler" << std::endl;
 
@@ -133,7 +127,6 @@ void Parabolic::assemble_newton_system()
       cell_matrix = 0.0;
       cell_rhs = 0.0;
 
-      // Estraiamo u^{n+1}_k (soluzione corrente di Newton) e u^n (soluzione al tempo vecchio)
       fe_values.get_function_values(solution_owned, u_k_values);
       fe_values.get_function_gradients(solution_owned, u_k_grads);
       fe_values.get_function_values(solution_old_time, u_old_values);
@@ -143,7 +136,6 @@ void Parabolic::assemble_newton_system()
           double u_k   = u_k_values[q];
           double u_old = u_old_values[q];
 
-          // f(u) = u(1-u)(1-2u) e f'(u) = 1 - 6u + 6u^2
           double reazione = (2.0 / eps) * u_k * (1.0 - u_k) * (1.0 - 2.0 * u_k);
           double derivata_reazione = (2.0 / eps) * (1.0 - 6.0 * u_k + 6.0 * u_k * u_k);
 
@@ -151,7 +143,6 @@ void Parabolic::assemble_newton_system()
             {
               for (unsigned int j = 0; j < dofs_per_cell; ++j)
                 {
-                  // JACOBIANO: a(u)(delta_u, v) (dipende da delta_t!)
                   cell_matrix(i, j) += (
                       fe_values.shape_value(i, q) * fe_values.shape_value(j, q)
                       + deltat * eps * fe_values.shape_grad(i, q) * fe_values.shape_grad(j, q)
@@ -159,7 +150,6 @@ void Parabolic::assemble_newton_system()
                   ) * fe_values.JxW(q);
                 }
 
-              // RESIDUO NEGATIVO: -R(u; v) (dipende da delta_t!)
               cell_rhs(i) -= (
                   (u_k - u_old) * fe_values.shape_value(i, q)
                   + deltat * eps * u_k_grads[q] * fe_values.shape_grad(i, q)
@@ -169,7 +159,6 @@ void Parabolic::assemble_newton_system()
         }
       cell->get_dof_indices(dof_indices);
       
-      // Usa i constraints (che contengono le Periodiche) per distribuire
       constraints.distribute_local_to_global(cell_matrix, cell_rhs, dof_indices, lhs_matrix, system_rhs);
     }
   lhs_matrix.compress(VectorOperation::add);
@@ -208,7 +197,8 @@ void Parabolic::solve_newton()
 void
 Parabolic::output(const unsigned int &time_step) const
 {
-  TimerOutput::Scope t(computing_timer, "4. Output");
+  static double cumulative_eval_time = 0.0; 
+
   DataOut<dim> data_out;
   data_out.add_data_vector(dof_handler, solution, "u");
 
@@ -217,10 +207,23 @@ Parabolic::output(const unsigned int &time_step) const
   const Vector<double> partitioning(partition_int.begin(), partition_int.end());
   data_out.add_data_vector(partitioning, "partitioning");
 
+  auto start_eval = std::chrono::high_resolution_clock::now();
+
   data_out.build_patches();
+
+  auto end_eval = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> diff_eval = end_eval - start_eval;
+  cumulative_eval_time += diff_eval.count();
 
   data_out.write_vtu_with_pvtu_record(
     "./", "output", time_step, MPI_COMM_WORLD, 3);
+
+  if (time_step == 50) {
+      pcout << "\n===============================================" << std::endl;
+      pcout << ">>> Evaluation Time: " 
+            << cumulative_eval_time << " s <<<" << std::endl;
+      pcout << "===============================================\n" << std::endl;
+  }
 }
 
 void
@@ -230,16 +233,13 @@ Parabolic::solve()
 
   time = 0.0;
 
-  // Apply the initial condition.
   {
     pcout << "Applying the initial condition" << std::endl;
 
-    //exact_solution.set_time(time);
     VectorTools::interpolate(dof_handler, u_0, solution_owned);
     constraints.distribute(solution_owned);
     solution = solution_owned;
 
-    // Output the initial solution.
     output(0);
     pcout << "-----------------------------------------------" << std::endl;
   }
@@ -267,11 +267,9 @@ Parabolic::compute_error(const VectorTools::NormType &norm_type)
 {
   TimerOutput::Scope t(computing_timer, "5. Compute Error");
   FE_SimplexP<dim> fe_linear(1);
-  // FE_Q<dim> fe_linear(1);
   MappingFE        mapping(fe_linear);
 
   const QGaussSimplex<dim> quadrature_error = QGaussSimplex<dim>(r + 2);
-  // const QGauss<dim> quadrature_error = QGauss<dim>(r + 2);
 
   exact_solution.set_time(time);
 

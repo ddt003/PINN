@@ -7,16 +7,10 @@
 #include "Elliptic.hpp"
 
 #ifdef CONVERGENCE
-// Main function.
 int
 main(int /*argc*/, char * /*argv*/[])
 {
   ConvergenceTable table;
-
-  const std::vector<std::string> meshes = {"../mesh/mesh-square-h0.100000.msh",
-                                           "../mesh/mesh-square-h0.050000.msh",
-                                           "../mesh/mesh-square-h0.025000.msh",
-                                           "../mesh/mesh-square-h0.012500.msh"};
   const std::vector<unsigned int>     N = {100, 200, 400, 800};
   const unsigned int             degree = 1;
 
@@ -36,7 +30,7 @@ main(int /*argc*/, char * /*argv*/[])
 
       double h=1.0/N[i];
 
-      table.add_value("h", h); // h
+      table.add_value("h", h);
       table.add_value("L2", error_L2);
       table.add_value("H1", error_H1);
 
@@ -57,7 +51,7 @@ main(int /*argc*/, char * /*argv*/[])
 int
 main(int /*argc*/, char * /*argv*/[])
 {
-  const unsigned int N = 1000;
+  const unsigned int N = 2000;
   const unsigned int r = 1;
 
   Elliptic problem(N, r);
