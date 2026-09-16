@@ -1,25 +1,22 @@
 """
-Allen-Cahn 1D (Section 5 of the paper)
+Allen-Cahn 1D
 
     u_t = eps * u_xx - (2/eps) * u (1-u) (1-2u),   x in [0,1], t in [0, 0.05]
     u(t,0) = u(t,1)                                (periodic boundary)
     u(0,x) = 0.25 sin(2 pi x) + 0.25 sin(16 pi x) + 0.5
 
-with eps = 0.01. There is no analytical solution: the paper uses as ground
+with eps = 0.01. There is no analytical solution: using ground
 truth an FEM on a very fine mesh (7993 nodes, dt = 1e-4/3). This script
 exports the PINN prediction on a regular (t, x) grid, to be compared
 with the FEM solution calculated separately.
 
-PINN setup from the paper:
-  - Nf = 20000 collocation nel dominio, Ng = 250 sul bordo,
-    Nh = 500 sulla condizione iniziale (LHS, ricampionati)
+PINN setup:
+  - Nf = 20000, Ng = 250 on the boundary (periodic),
+    Nh = 500 for the initial condition
     - weighted loss: initial-condition term multiplied by 1000
     - pre-training: Adam lr = 1e-4 for 7000 iterations ONLY on the
         initial-condition loss, then Adam lr = 1e-4 for 50000 iterations
         on the complete loss, and finally L-BFGS
-    - architectures from the paper: from [20,20,20] to [100]*7 and [500]*6
-        (with 20 nodes per layer, the paper CANNOT approximate the solution;
-         at least 100 nodes per layer are required)
 """
 import matplotlib
 matplotlib.use("Agg")
